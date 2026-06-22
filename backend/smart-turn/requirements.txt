@@ -1,0 +1,13 @@
+torch==2.9.0
+torchaudio==2.9.0
+transformers[torch]==4.48.2
+datasets==4.4.1
+scikit-learn==1.6.1
+numpy==2.3.4
+librosa
+soundfile
+wandb
+torchcodec==0.8.1
+onnx==1.19.1
+onnxruntime-gpu==1.23.2
+onnxscript==0.5.6

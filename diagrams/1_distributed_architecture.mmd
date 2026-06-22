@@ -1,0 +1,19 @@
+graph LR
+    subgraph System A [System A — Whisper STT & WebSocket Orchestrator]
+        Mic[User Mic] -->|PCM Audio| ASR[Faster-Whisper]
+        ASR -->|Transcribed Text| WS[FastAPI WebSockets Router]
+    end
+
+    subgraph System B [System B — Front LLM]
+        OllamaB[Ollama: Qwen 8B]
+    end
+
+    subgraph System C [System C — Background Agent]
+        OllamaC[Ollama: Qwen 8B]
+        NodeC[Node.js Flight MCP Server]
+    end
+
+    WS -->|HTTP POST /api/chat| OllamaB
+    OllamaB -->|JSON RouteDecision| WS
+    WS -->|gRPC / HTTP API| OllamaC
+    OllamaC -->|Synthesized Spoken WAV| WS

@@ -1,0 +1,8 @@
+graph TD
+    UserVoice[Spoken Input] -->|1. Voice Biometrics| BioGate{Registered ID Match?}
+    BioGate -->|No| Block1[Discards Command]
+    BioGate -->|Yes| RBACGate{2. Role-Based Permissions}
+    RBACGate -->|No| Block2[Emits tool_blocked event]
+    RBACGate -->|Yes| DestructiveGate{3. Destructive Tool?}
+    DestructiveGate -->|Yes| LatchWindow[4. Latch Confirmation Window]
+    DestructiveGate -->|No| Exec[5. Programmatic Safe Execution]

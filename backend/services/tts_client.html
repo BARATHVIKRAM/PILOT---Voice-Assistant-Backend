@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PILOT Voice Presentation Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #0b0b0f;
+      --card-bg: #13131c;
+      --border-color: #242435;
+      --accent-color: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Navigation bar */
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #status {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      background: #1b1b26;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #status.connected   { color: var(--success); border-color: var(--success); }
+    #status.speaking    { color: var(--warning); border-color: var(--warning); }
+    #status.interrupted { color: var(--danger); border-color: var(--danger); }
+
+    #mic-status {
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: #1b1b26;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s;
+    }
+    #mic-status.listening { background: #15291d; color: var(--success); border-color: var(--success); }
+    #mic-status.heard     { background: #2b1a1a; color: var(--danger); border-color: var(--danger); }
+
+    /* Dashboard Layout */
+    .dashboard-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    /* Left Column - Voice & Chats */
+    .left-panel {
+      width: 45%;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      gap: 16px;
+      background-color: #0d0d14;
+    }
+
+    /* Right Column - PPTX Viewer */
+    .right-panel {
+      width: 55%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      background-color: var(--bg-color);
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Transcript Terminal Box */
+    #transcript-box {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #transcript-box:empty::before {
+      content: "🎙 Wake Pilot by speaking 'Hey Pilot', then ask any questions regarding presentation slides, flight itineraries, database records or calculations. Spoken output transcripts will stream here...";
+      color: #555570;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .transcript-entry {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .transcript-meta {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .transcript-meta .speaker {
+      color: var(--accent-color);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .transcript-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      background: #1b1b26;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent-color);
+    }
+    .transcript-text.active::after {
+      content: "▋";
+      display: inline-block;
+      animation: blink 0.9s step-end infinite;
+      color: var(--accent-color);
+      margin-left: 2px;
+    }
+    .transcript-text.interrupted { text-decoration: line-through; color: var(--text-muted); border-left-color: var(--danger); opacity: 0.6; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Typing Speak Prompt */
+    .prompt-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 60px;
+      background: #1b1b26;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+    }
+    textarea:focus { border-color: var(--accent-color); }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 16px;
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    button:disabled { background: #1c1c28; color: #4e4e6a; border: 1px solid #1a1a24; cursor: default; }
+    #interrupt-btn { background: #621919; color: #fca5a5; }
+    #interrupt-btn:hover:not(:disabled) { background: #881b1b; }
+    #clear-btn { background: #1f2937; color: #9ca3af; }
+    #clear-btn:hover { background: #374151; }
+    #queue-info { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
+
+    /* PPTX Dropzone Interface */
+    .upload-card {
+      flex: 1;
+      border: 2px dashed var(--border-color);
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      text-align: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .upload-card:hover {
+      border-color: var(--accent-color);
+      background-color: #171725;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      color: var(--accent-color);
+    }
+
+    .upload-details h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .upload-details p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Presentation Content View Layout */
+    .presentation-container {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .ppt-header {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ppt-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .ppt-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .action-badge {
+      background-color: #1d1d30;
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .action-badge:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    /* Interactive Live Slides Deck Visualizer */
+    .slides-deck-viewer {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide-viewer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .slide-badge {
+      font-size: 0.75rem;
+      background: var(--accent-color);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .slide-viewer-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .slide-viewer-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 12px;
+    }
+
+    .slide-viewer-bullets {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #d1d5db;
+      padding-left: 20px;
+    }
+    .slide-viewer-bullets li {
+      margin-bottom: 10px;
+    }
+
+    .slide-viewer-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+    }
+
+    .nav-circle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1b1b26;
+      border: 1px solid var(--border-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.15s ease;
+    }
+    .nav-circle-btn:hover {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+    .nav-circle-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      background: transparent;
+    }
+
+    .slide-page-indicator {
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎙️ PILOT Interactive Voice Hub</h1>
+    <div class="header-status">
+      <div id="status">Connecting...</div>
+      <div id="mic-status">mic off</div>
+    </div>
+  </header>
+
+  <div class="dashboard-container">
+    <!-- Left Column: Chats -->
+    <div class="left-panel">
+      <h2 class="panel-title">Voice Conversation Log</h2>
+      <div id="transcript-box"></div>
+
+      <!-- Speak / Manual Prompt section -->
+      <div class="prompt-section">
+        <textarea id="text" placeholder="Type a message or instruction for Pilot..."></textarea>
+        <div id="queue-info"></div>
+        <div class="btn-row">
+          <button id="enable-audio-btn" onclick="enableAudio()">🎧 Enable Audio</button>
+          <button id="speak-btn" onclick="speak()" disabled>⚡ Speak</button>
+          <button id="interrupt-btn" onclick="sendInterrupt()" disabled>🛑 Stop</button>
+          <button id="clear-btn" onclick="clearTranscript()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: PPTX View Dashboard -->
+    <div class="right-panel">
+      <h2 class="panel-title">PowerPoint Workspace Center</h2>
+      
+      <!-- Upload PowerPoint landing card -->
+      <div class="upload-card" id="upload-card-box" onclick="document.getElementById('ppt-file').click()">
+        <input
+          type="file"
+          id="ppt-file"
+          accept=".ppt,.pptx"
+          style="display:none"
+          onchange="uploadPPT()"
+        />
+        <div class="upload-icon">📊</div>
+        <div class="upload-details">
+          <h3>Load Raw Presentation slides</h3>
+          <p>Drag or select your raw PowerPoint presentation (.pptx) file. It will upload as is to allow your background agent to parse slide decks directly in original fidelity.</p>
+        </div>
+      </div>
+
+      <!-- Loaded Presentation Panel (Toggled dynamically) -->
+      <div class="presentation-container" id="presentation-view">
+        <div class="ppt-header">
+          <div class="ppt-info">
+            <h3 id="ppt-title-display">Biosorption_HeavyMetals.pptx</h3>
+            <p id="ppt-slide-display">12 slides parsed in original resolution</p>
+          </div>
+          <a href="#" id="presentation-link" target="_blank" class="action-badge">
+            🚀 Open reveal.js Slides ↗
+          </a>
+        </div>
+
+        <!-- Dynamic Deck Visualizer -->
+        <div class="slides-deck-viewer">
+          <div class="slide-viewer-header">
+            <span class="slide-badge">ACTIVE PRESENTATION SLIDE</span>
+            <span class="slide-page-indicator" id="slide-number-indicator">Slide 1 of 12</span>
+          </div>
+
+          <div class="slide-viewer-body">
+            <h2 class="slide-viewer-title" id="slide-title">Biosorption & Bioaccumulation</h2>
+            <ul class="slide-viewer-bullets" id="slide-bullets">
+              <li>Bioremediation using non-living and active organic biomass structures.</li>
+            </ul>
+          </div>
+
+          <div class="slide-viewer-controls">
+            <button class="nav-circle-btn" id="prev-slide-btn" onclick="changeSlide(-1)">◀</button>
+            <span style="font-size:0.75rem; color: var(--text-muted);">Navigate presentation slides manually or speak to Pilot</span>
+            <button class="nav-circle-btn" id="next-slide-btn" onclick="changeSlide(1)">▶</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Existing Voice Config ───────────────────
+    const WS_URL         = `ws://${location.host}/tts`
+    const LISTEN_URL     = `ws://${location.host}/listen`
+    const TRANSCRIPT_URL = `ws://${location.host}/transcript`
+    const SAMPLE_RATE    = 24000
+
+    const INTERRUPT_PHRASES = ["stop", "pause", "interrupt", "stop talking", "be quiet"]
+
+    const statusEl      = document.getElementById("status")
+    const micStatusEl   = document.getElementById("mic-status")
+    const speakBtn      = document.getElementById("speak-btn")
+    const interruptBtn  = document.getElementById("interrupt-btn")
+    const queueInfo     = document.getElementById("queue-info")
+    const transcriptBox = document.getElementById("transcript-box")
+
+    let ws, listenWs, transcriptWs, slideWs
+    let audioCtx
+    let pcmQueue  = []
+    let playing   = false
+    let nextStart = 0
+    let isSpeaking = false
+    let activeEntry = null
+    let activeSources = []
+
+    // PPT Slide variables
+    let slidesList = [];
+    let currentSlideIndex = 0;
+
+    // ─────────────────────────────────────────────
+    //  AudioContext
+    // ─────────────────────────────────────────────
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE })
+        nextStart = audioCtx.currentTime
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume()
+    }
+
+    function enableAudio() {
+      ensureAudioContext()
+      startMicInterruptListener()
+      document.getElementById("enable-audio-btn").textContent = "Audio ON ✓"
+      document.getElementById("enable-audio-btn").disabled = true
+      setStatus("Audio enabled — ready", "connected")
+    }
+
+    // ─────────────────────────────────────────────
+    //  Gapless playback
+    // ─────────────────────────────────────────────
+    function playNext() {
+      if (pcmQueue.length === 0) {
+        playing = false
+        updateQueueInfo()
+        return
+      }
+
+      playing = true
+      const raw     = pcmQueue.shift()
+      const int16   = new Int16Array(raw)
+      const float32 = new Float32Array(int16.length)
+      for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0
+
+      const buffer = audioCtx.createBuffer(1, float32.length, SAMPLE_RATE)
+      buffer.getChannelData(0).set(float32)
+
+      const source = audioCtx.createBufferSource()
+      source.buffer = buffer
+      source.connect(audioCtx.destination)
+
+      const startAt = Math.max(nextStart, audioCtx.currentTime)
+      source.start(startAt)
+      nextStart = startAt + buffer.duration
+
+      activeSources.push(source)
+      source.onended = () => {
+        activeSources = activeSources.filter(s => s !== source)
+        playNext()
+      }
+      updateQueueInfo()
+    }
+
+    function enqueuePCM(data) {
+      ensureAudioContext()
+      pcmQueue.push(data)
+      updateQueueInfo()
+      if (!playing) playNext()
+    }
+
+    // ─────────────────────────────────────────────
+    //  Interrupt
+    // ─────────────────────────────────────────────
+    function sendInterrupt() {
+      if (!isSpeaking) return
+      flushAudio()
+      if (ws && ws.readyState === WebSocket.OPEN)       ws.send("__INTERRUPT__")
+      if (listenWs && listenWs.readyState === WebSocket.OPEN) listenWs.send("__INTERRUPT__")
+      markInterrupted()
+      setStatus("Interrupted", "interrupted")
+      setTimeout(() => setStatus("Connected", "connected"), 1500)
+    }
+
+    function flushAudio() {
+      for (const src of activeSources) { try { src.stop() } catch (_) {} }
+      activeSources = []
+      pcmQueue = []
+      playing = false
+      updateQueueInfo()
+    }
+
+    function markInterrupted() {
+      isSpeaking = false
+      speakBtn.disabled = false
+      interruptBtn.disabled = true
+      if (activeEntry) {
+        activeEntry.querySelector(".transcript-text").classList.replace("active", "interrupted")
+        activeEntry = null
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    //  Shared audio/control message handler
+    // ─────────────────────────────────────────────
+    function handleMessage(event) {
+      if (typeof event.data !== "string") {
+        enqueuePCM(event.data)
+        return
+      }
+
+      try {
+        const msg = JSON.parse(event.data)
+        if (msg.type === "transcript" && msg.text) {
+          const lastText = activeEntry
+            ? activeEntry.querySelector(".transcript-text")?.textContent?.trim()
+            : null
+          if (lastText !== msg.text.trim()) {
+            addTranscriptEntry(msg.text, msg.source || "llm")
+          }
+          setStatus("Speaking...", "speaking")
+          isSpeaking = true
+          speakBtn.disabled = true
+          interruptBtn.disabled = false
+          return
+        }
+      } catch (_) {}
+
+      if (event.data === "__END__") {
+        if (activeEntry) {
+          activeEntry.querySelector(".transcript-text").classList.remove("active")
+          activeEntry = null
+        }
+        isSpeaking = false
+        speakBtn.disabled = false
+        interruptBtn.disabled = true
+        setStatus("Connected", "connected")
+      }
+
+      if (event.data === "__INTERRUPTED__") {
+        isSpeaking = false
+        speakBtn.disabled = false
+        interruptBtn.disabled = true
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    //  WebSocket connections
+    // ─────────────────────────────────────────────
+    function connect() {
+      ws = new WebSocket(WS_URL)
+      ws.binaryType = "arraybuffer"
+      ws.onopen  = () => { setStatus("Connected", "connected"); speakBtn.disabled = false }
+      ws.onclose = () => { setStatus("Disconnected — retrying...", "error"); speakBtn.disabled = true; setTimeout(connect, 2000) }
+      ws.onerror = () => setStatus("WebSocket error", "error")
+      ws.onmessage = handleMessage
+    }
+
+    function connectListener() {
+      listenWs = new WebSocket(LISTEN_URL)
+      listenWs.binaryType = "arraybuffer"
+      listenWs.onopen  = () => console.log("[listen] connected")
+      listenWs.onclose = () => setTimeout(connectListener, 2000)
+      listenWs.onmessage = handleMessage
+    }
+
+    function connectTranscript() {
+      transcriptWs = new WebSocket(TRANSCRIPT_URL)
+      transcriptWs.onopen  = () => console.log("[transcript] connected")
+      transcriptWs.onclose = () => setTimeout(connectTranscript, 2000)
+      transcriptWs.onmessage = handleMessage
+    }
+
+    // Connect to the Slide Server WebSocket to receive voice navigation actions in real-time
+    function connectSlidesWs() {
+      const slideWsUrl = `ws://${location.hostname}:8001/ws`
+      slideWs = new WebSocket(slideWsUrl)
+      slideWs.onopen = () => console.log("[slide_server] WebSocket connection established")
+      slideWs.onclose = () => setTimeout(connectSlidesWs, 3000)
+      slideWs.onmessage = (event) => {
+        try {
+          const cmd = JSON.parse(event.data)
+          console.log("[slide_server] Real-time command received:", cmd)
+          if (slidesList.length === 0) return
+
+          switch (cmd.action) {
+            case "next":
+              changeSlideLocally(1)
+              break
+            case "prev":
+            case "previous":
+              changeSlideLocally(-1)
+              break
+            case "first":
+              renderSlide(0)
+              break
+            case "last":
+              renderSlide(slidesList.length - 1)
+              break
+            case "goto":
+              const idx = Math.max(0, (cmd.index || 1) - 1)
+              renderSlide(idx)
+              break
+          }
+        } catch (err) {
+          console.error("[slide_server] Error parsing slide command:", err)
+        }
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    //  Mic keyword interrupt (Web Speech API)
+    // ─────────────────────────────────────────────
+    let recognition = null
+
+    function startMicInterruptListener() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+      if (!SR) { micStatusEl.textContent = "mic unavailable"; return }
+
+      recognition = new SR()
+      recognition.continuous = true
+      recognition.interimResults = true
+      recognition.lang = "en-US"
+
+      recognition.onstart = () => { micStatusEl.textContent = "🎙 listening"; micStatusEl.className = "listening" }
+      recognition.onresult = (e) => {
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript.toLowerCase().trim()
+          for (const phrase of INTERRUPT_PHRASES) {
+            if (t.includes(phrase) && isSpeaking) {
+              micStatusEl.textContent = `⚡ heard "${phrase}"`
+              micStatusEl.className = "heard"
+              setTimeout(() => { micStatusEl.textContent = "🎙 listening"; micStatusEl.className = "listening" }, 1500)
+              sendInterrupt()
+              return
+            }
+          }
+        }
+      }
+      recognition.onerror = (e) => { if (e.error === "not-allowed") micStatusEl.textContent = "mic blocked" }
+      recognition.onend   = () => { setTimeout(() => { try { recognition.start() } catch (_) {} }, 200) }
+      try { recognition.start() } catch (_) {}
+    }
+
+    // ─────────────────────────────────────────────
+    //  Speak (manual text submission)
+    // ─────────────────────────────────────────────
+    function speak() {
+      const text = document.getElementById("text").value.trim()
+      if (!text || ws.readyState !== WebSocket.OPEN) return
+      ensureAudioContext()
+      flushAudio()
+      nextStart = audioCtx.currentTime
+      speakBtn.disabled = true
+      interruptBtn.disabled = false
+      isSpeaking = true
+      setStatus("Speaking...", "speaking")
+      ws.send(text)
+    }
+
+    // ─────────────────────────────────────────────
+    //  Transcript displays
+    // ─────────────────────────────────────────────
+    function addTranscriptEntry(text, source = "llm") {
+      if (activeEntry) {
+        activeEntry.querySelector(".transcript-text").classList.remove("active")
+        activeEntry = null
+      }
+      const ts    = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+      const label = source === "llm" ? "🤖 PILOT" : source
+      const entry = document.createElement("div")
+      entry.className = "transcript-entry"
+      entry.innerHTML = `
+        <div class="transcript-meta">
+          <span class="speaker">${label}</span>
+          <span class="ts">${ts}</span>
+        </div>
+        <div class="transcript-text active">${escapeHtml(text)}</div>
+      `
+      transcriptBox.appendChild(entry)
+      transcriptBox.scrollTop = transcriptBox.scrollHeight
+      activeEntry = entry
+    }
+
+    function clearTranscript() { transcriptBox.innerHTML = ""; activeEntry = null }
+    function escapeHtml(str) { return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") }
+    function setStatus(text, cls) { statusEl.textContent = text; statusEl.className = cls || "" }
+    function updateQueueInfo() { queueInfo.textContent = pcmQueue.length > 0 ? `${pcmQueue.length} chunk(s) buffered` : "" }
+
+    // ─────────────────────────────────────────────
+    //  PPTX Upload & Rendering Center
+    // ─────────────────────────────────────────────
+    async function uploadPPT() {
+      const fileInput = document.getElementById("ppt-file");
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("ppt", file);
+
+      try {
+        const landingBox = document.getElementById("upload-card-box");
+        landingBox.innerHTML = `<h3>Parsing Original PPTX file: "${file.name}"</h3><p>Extracting shapes, layers, vector bullets, and slide texts directly into background memory...</p>`;
+
+        const response = await fetch("/upload_ppt", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+        console.log("Direct Upload response:", result);
+
+        if (result.status === "success") {
+          slidesList = result.slides || [];
+          currentSlideIndex = 0;
+
+          // Toggle layouts
+          document.getElementById("upload-card-box").style.display = "none";
+          document.getElementById("presentation-view").style.display = "flex";
+
+          // Populate info
+          document.getElementById("ppt-title-display").textContent = result.filename;
+          document.getElementById("ppt-slide-display").textContent = `${result.slide_count} slides parsed successfully in native PPTX quality`;
+          document.getElementById("presentation-link").href = result.slides_url;
+
+          // Render first slide
+          renderSlide(0);
+        } else {
+          alert("Error parsing presentation file: " + result.detail);
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("Upload failed. Make sure your Python backend is active and running.");
+      }
+    }
+
+    function renderSlide(index) {
+      if (slidesList.length === 0) return;
+      currentSlideIndex = index;
+
+      const slide = slidesList[index];
+      document.getElementById("slide-title").textContent = slide.title || `Slide ${slide.index}`;
+      document.getElementById("slide-number-indicator").textContent = `Slide ${slide.index} of ${slidesList.length}`;
+
+      const bulletsContainer = document.getElementById("slide-bullets");
+      bulletsContainer.innerHTML = "";
+
+      if (slide.bullets && slide.bullets.length > 0) {
+        slide.bullets.forEach(b => {
+          const li = document.createElement("li");
+          li.textContent = b;
+          bulletsContainer.appendChild(li);
+        });
+      }
+
+      // Render any extracted embedded figures/diagrams directly onto the slide card
+      if (slide.images && slide.images.length > 0) {
+        slide.images.forEach(imgUrl => {
+          const imgDiv = document.createElement("div");
+          imgDiv.style.marginTop = "20px";
+          imgDiv.style.textAlign = "center";
+          imgDiv.style.borderRadius = "8px";
+          imgDiv.style.overflow = "hidden";
+          imgDiv.style.border = "1px solid var(--border-color)";
+          imgDiv.style.backgroundColor = "#08080c";
+          imgDiv.style.padding = "10px";
+          
+          const img = document.createElement("img");
+          img.src = imgUrl;
+          img.style.maxWidth = "100%";
+          img.style.maxHeight = "240px";
+          img.style.objectFit = "contain";
+          img.style.borderRadius = "4px";
+          
+          const label = document.createElement("div");
+          label.style.fontSize = "0.7rem";
+          label.style.color = "var(--accent-color)";
+          label.style.marginTop = "8px";
+          label.style.fontWeight = "bold";
+          label.style.letterSpacing = "0.05em";
+          label.textContent = "📊 EMBEDDED DIAGRAM / FIGURE PARSED";
+          
+          imgDiv.appendChild(img);
+          imgDiv.appendChild(label);
+          bulletsContainer.appendChild(imgDiv);
+        });
+      }
+
+      // Button states
+      document.getElementById("prev-slide-btn").disabled = (index === 0);
+      document.getElementById("next-slide-btn").disabled = (index === slidesList.length - 1);
+    }
+
+    function changeSlideLocally(direction) {
+      const nextIdx = currentSlideIndex + direction;
+      if (nextIdx >= 0 && nextIdx < slidesList.length) {
+        renderSlide(nextIdx);
+      }
+    }
+
+    // Sends slide command to slide_server.py so manual dashboard clicks also navigate reveal.js slides
+    async function triggerRemoteSlideAction(action, index) {
+      try {
+        const payload = { action };
+        if (index !== undefined) payload.index = index;
+        await fetch(`http://${location.hostname}:8001/slide/command`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error("Failed to sync slide command to remote server:", err);
+      }
+    }
+
+    function changeSlide(direction) {
+      const nextIdx = currentSlideIndex + direction;
+      if (nextIdx >= 0 && nextIdx < slidesList.length) {
+        renderSlide(nextIdx);
+        // Sync the action to reveal.js presentation tab too
+        const action = direction > 0 ? "next" : "prev";
+        triggerRemoteSlideAction(action);
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    //  Boot Setup
+    // ─────────────────────────────────────────────
+    connect()
+    connectListener()
+    connectTranscript()
+    connectSlidesWs()
+  </script>
+</body>
+</html>

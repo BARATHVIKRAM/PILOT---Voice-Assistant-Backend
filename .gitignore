@@ -1,0 +1,44 @@
+# Python virtual environments
+.venv/
+venv/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.cache/
+
+# Large binary model weights (Git LFS recommended, ignore for standard push)
+*.onnx
+*.bin
+
+# Environment configurations and secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Local databases and runtime data
+*.db
+pilot.db
+pilot_voice.db
+data/*.db
+backend/pilot.db
+backend/pilot_voice.db
+backend/data/*.db
+uploads/*.webm
+uploads/*.wav
+uploads/*.mp3
+server_stdout.log
+*.log
+
+# Node dependencies (frontend & flight-mcp)
+node_modules/
+dist/
+dist-ssr/
+package-lock.json
+
+# Operating System files
+.DS_Store
+Thumbs.db

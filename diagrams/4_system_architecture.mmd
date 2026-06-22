@@ -1,0 +1,21 @@
+graph TD
+    A[Microphone / Webpage] -->|PCM Audio| B(ASR Pipeline: pilot_asr.py)
+    B -->|Stage 1: Silero VAD| C{Speech Detected?}
+    C -->|Yes| D[Accumulate Speech in Buffer]
+    C -->|No / Silence| E{Stage 2: Smart Turn v3}
+    E -->|Complete Thought| F[Whisper Transcription]
+    E -->|Mid-Sentence Pause| D
+    
+    F -->|Transcribed Text| G[Dual-LLM Router: call_classifier]
+    
+    G -->|CONVERSATION| H[Front Agent: front_agent.py]
+    G -->|SLIDE_CONTROL| I[Background Agent: _handle_slide_control]
+    G -->|BACKGROUND_TASK| J[Background Agent: background_agent.py]
+    
+    H -->|Direct Answer| K[TTS Streaming Server: tts_server.py]
+    I -->|WebSocket Command| L[Slide Server: slide_server.py]
+    J -->|Database/MCP/Writes/System Check/Vision Image Q&A| M[Execute Async Subtasks]
+    M -->|Synthesized Spoken Report| K
+    
+    K -->|PCM Chunks via WS| N[Browser Audio Playback]
+    L -->|Navigate Command| O[Dashboard & Slides Presentation UI]

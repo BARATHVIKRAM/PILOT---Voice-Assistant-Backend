@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Collection</title>
+</head>
+<body>
+
+<h2>
+Please read:
+"Secure connection verified. I am calibrating my unique vocal profile for the intelligence network. By speaking clearly, my pitch, resonance, and breath patterns are fully registered. Does the system recognize my signature now? I authorize this safe digital identity."
+</h2>
+
+<input
+    id="username"
+    placeholder="Enter your name"
+/>
+
+<br><br>
+
+<button onclick="startRecording()">
+Start Recording
+</button>
+
+<button onclick="stopRecording()">
+Stop Recording
+</button>
+
+<div id="counter">
+Recording 1 of 3
+</div>
+
+<script>
+
+let mediaRecorder
+let chunks = []
+
+let recordingNumber = 1
+
+const promptText =
+"Secure connection verified. I am calibrating my unique vocal profile for the intelligence network. By speaking clearly, my pitch, resonance, and breath patterns are fully registered. Does the system recognize my signature now? I authorize this safe digital identity."
+
+async function startRecording(){
+
+    const stream =
+        await navigator.mediaDevices
+        .getUserMedia({audio:true})
+
+    mediaRecorder =
+        new MediaRecorder(stream)
+
+    chunks = []
+
+    mediaRecorder.ondataavailable =
+        e => chunks.push(e.data)
+
+    mediaRecorder.start()
+}
+
+async function stopRecording(){
+
+    mediaRecorder.stop()
+
+    mediaRecorder.onstop =
+    async ()=>{
+
+        const blob =
+            new Blob(chunks,{
+                type:"audio/webm"
+            })
+
+        const form =
+            new FormData()
+
+        form.append(
+            "user_name",
+            document.getElementById("username").value
+        )
+
+        form.append(
+            "prompt_text",
+            promptText
+        )
+
+        form.append(
+            "recording_number",
+            recordingNumber
+        )
+
+        form.append(
+            "audio",
+            blob,
+            `recording_${recordingNumber}.webm`
+        )
+
+        await fetch(
+            "http://localhost:8000/upload",
+            {
+                method:"POST",
+                body:form
+            }
+        )
+
+        recordingNumber++
+
+        if(recordingNumber <= 3){
+
+            document.getElementById(
+                "counter"
+            ).innerText =
+            `Recording ${recordingNumber} of 3`
+
+        } else {
+
+            document.getElementById(
+                "counter"
+            ).innerText =
+            "Completed!"
+        }
+    }
+}
+
+</script>
+
+</body>
+</html>

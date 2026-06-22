@@ -1,0 +1,63 @@
+{
+  "filename": "python_segment_tree.py",
+  "content": "```python\n# Python Segment Tree
+
+class SegmentTree:
+    def __init__(self, arr):
+        self.size = len(arr)
+        self.seg_tree = []
+        self.build(arr, 0, self.size - 1, 1)
+
+    def build(self, arr, start, end, node):
+        if start == end:
+            self.seg_tree.append(arr[start])
+            return
+
+        mid = (start + end) // 2
+        self.build(arr, start, mid, 2 * node)
+        self.build(arr, mid + 1, end, 2 * node + 1)
+        self.seg_tree[node] = self.seg_tree[2 * node] + self.seg_tree[2 * node + 1]
+
+    def update(self, index, val):
+        def update_util(i, ns, ne, node):
+            if i < ns or ne < i:
+                return
+
+            if ns == ne:
+                self.seg_tree[node] = val
+                return
+
+            mid = (ns + ne) // 2
+            update_util(i, ns, mid, 2 * node)
+            update_util(i, mid + 1, ne, 2 * node + 1)
+            self.seg_tree[node] = self.seg_tree[2 * node] + self.seg_tree[2 * node + 1]
+
+    def query(self, left, right):
+        def query_util(left, right, ns, ne, node):
+            if left <= ns and ne <= right:
+                return self.seg_tree[node]
+
+            mid = (ns + ne) // 2
+            sum1 = 0
+            sum2 = 0
+
+            if mid >= left:
+                sum1 = query_util(left, right, ns, mid, 2 * node)
+
+            if mid + 1 <= right:
+                sum2 = query_util(left, right, mid + 1, ne, 2 * node + 1)
+
+            return sum1 + sum2
+
+    # Test the segment tree implementation
+    def test():
+        arr = [3, 5, 7, 9, 10, 12, 15]
+        seg_tree = SegmentTree(arr)
+        seg_tree.update(2, 6)
+        print('Updated array:', seg_tree.seg_tree.seg_tree)
+        print('Sum of elements from index 4 to 6:', seg_tree.query(4, 6))
+
+# Run the test function
+SegmentTree.test()
+```"
+}

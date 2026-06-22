@@ -1,0 +1,4 @@
+graph LR
+    AudioIn[Raw Audio Chunks] -->|DSP Filters| DSP[RMS Energy Gating]
+    DSP -->|Audio Segment| ASR[faster-whisper]
+    ASR -->|WER / CER| Eval[Ground Truth Transcript]

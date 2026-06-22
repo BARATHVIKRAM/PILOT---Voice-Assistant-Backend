@@ -1,0 +1,36 @@
+#
+# DGX Spark / aarch64 CUDA install
+#
+# `torchcodec==0.8.1` currently has no PyPI wheel for aarch64, but HF `datasets` audio decoding
+# requires `torchcodec` at runtime for this project (sample["audio"]["array"]).
+#
+# This requirements file forces CUDA-enabled PyTorch + TorchCodec by using the PyTorch CUDA wheel index
+# as the *primary* package source.
+#
+--pre
+#
+# IMPORTANT:
+# If you use `--extra-index-url`, pip may still install CPU-only PyTorch from PyPI on aarch64.
+# Use the PyTorch CUDA index as `--index-url` to avoid accidentally getting `torch==...+cpu`.
+#
+# If you need non-PyTorch packages from PyPI, we add PyPI as a *fallback* via `--extra-index-url`.
+--index-url https://download.pytorch.org/whl/nightly/cu130
+--extra-index-url https://pypi.org/simple
+
+transformers[torch]==4.48.2
+datasets==4.4.1
+scikit-learn==1.6.1
+numpy==2.3.4
+librosa
+soundfile
+wandb
+#
+# TorchCodec is highly coupled to torch nightlies; avoid pinning to an older nightly date.
+# Let pip pick the newest compatible pre-release from the same cu128 nightly index.
+torchcodec
+onnx==1.19.1
+onnxruntime==1.23.2
+onnxscript==0.5.6
+torchvision==0.25.0.dev20260122+cu130
+torch==2.11.0.dev20260122
+torchaudio==2.11.0.dev20260122

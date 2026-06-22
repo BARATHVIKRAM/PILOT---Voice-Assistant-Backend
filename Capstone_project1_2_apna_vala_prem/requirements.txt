@@ -1,0 +1,28 @@
+# Core Web and Server Frameworks
+fastapi>=0.100.0
+uvicorn>=0.20.0
+python-multipart>=0.0.6
+websockets>=11.0
+requests>=2.31.0
+
+# Database Connectivity
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+
+# Speech Recognition & Turn Detection (ASR)
+sounddevice>=0.4.6
+pyaudio>=0.2.14
+numpy>=1.24.0,<3.0.0
+faster-whisper>=1.0.0
+scipy>=1.10.0
+onnxruntime>=1.16.0
+
+# Text-to-Speech (TTS)
+kokoro-onnx>=0.4.0
+
+# Presentation Processing & Slide Generation
+python-pptx>=1.0.0
+
+# Model Context Protocol (MCP) & Agent Orchestration
+mcp>=1.0.0
+python-dotenv>=1.0.0
