@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>PILOT Demo Deck</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A0F;color:#E8E8F0;font-family:'DM Sans',sans-serif;height:100vh;overflow:hidden}
+.deck{width:100%;height:100vh;position:relative}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem;opacity:0;transition:opacity 0.4s;pointer-events:none}
+.slide.active{opacity:1;pointer-events:auto}
+.slide-num{position:absolute;bottom:1rem;right:1rem;font-size:0.7rem;color:rgba(255,255,255,0.15);font-family:monospace}
+h1{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,#6C63FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:0.75rem}
+h2{font-size:2rem;font-weight:700;text-align:center;margin-bottom:1rem}
+p,li{font-size:0.95rem;color:#8888AA;max-width:600px;line-height:1.7}
+ul{padding-left:1.5rem;max-width:600px}li{margin-bottom:0.4rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:600px;width:100%;margin-top:1rem}
+.card{background:#1A1A26;border:1px solid rgba(108,99,255,0.15);border-radius:12px;padding:1rem;text-align:center}
+.card .icon{font-size:1.6rem;margin-bottom:0.3rem}
+.card .lbl{font-size:0.8rem;color:#8888AA}
+.pill{display:inline-block;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.7rem;background:rgba(108,99,255,0.15);color:#6C63FF;margin:0.2rem}
+.prog{display:flex;gap:0.4rem;position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%)}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:background 0.3s}
+.dot.on{background:#6C63FF}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+</head>
+<body>
+<div class="deck">
+  <div class="slide active" id="s0">
+    <h1>PILOT</h1>
+    <p style="text-align:center">Portable Intelligent Listener for Open Tasking</p>
+    <p style="font-size:0.8rem;margin-top:0.5rem;text-align:center">Grid Dynamics Capstone 2026 · Team of 6</p>
+    <div style="margin-top:1.5rem">
+      <span class="pill">Sub-300ms</span><span class="pill">Speaker RBAC</span><span class="pill">Always-On</span>
+    </div>
+    <div class="slide-num">1 / 6</div>
+  </div>
+  <div class="slide" id="s1">
+    <h2>The Problem</h2>
+    <ul>
+      <li>Push-to-talk is friction — professionals can't afford it</li>
+      <li>Existing agents treat all audio as one anonymous speaker</li>
+      <li>No role-based access control on voice commands</li>
+      <li>Long-running tasks block the conversational loop</li>
+      <li>No semantic understanding of turn completion</li>
+    </ul>
+    <div class="slide-num">2 / 6</div>
+  </div>
+  <div class="slide" id="s2">
+    <h2>Architecture</h2>
+    <div class="grid">
+      <div class="card"><div class="icon">🎤</div><div class="lbl">WebRTC Audio Capture</div></div>
+      <div class="card"><div class="icon">🧠</div><div class="lbl">Semantic VAD (Smart Turn)</div></div>
+      <div class="card"><div class="icon">👥</div><div class="lbl">Speaker Diarization + Identity</div></div>
+      <div class="card"><div class="icon">⚡</div><div class="lbl">Qwen3:8B Front Router</div></div>
+    </div>
+    <div class="slide-num">3 / 6</div>
+  </div>
+  <div class="slide" id="s3">
+    <h2>Technology Stack</h2>
+    <div style="text-align:center;max-width:540px">
+      <span class="pill">Faster-Whisper distil-large-v3</span>
+      <span class="pill">Qwen3:8B (Ollama)</span>
+      <span class="pill">Sortformer</span>
+      <span class="pill">WeSpeaker</span>
+      <span class="pill">Edge TTS</span>
+      <span class="pill">FastAPI asyncio</span>
+      <span class="pill">React 18 + Zustand</span>
+      <span class="pill">WebRTC</span>
+      <span class="pill">SQLite</span>
+      <span class="pill">Gemini API</span>
+    </div>
+    <div class="slide-num">4 / 6</div>
+  </div>
+  <div class="slide" id="s4">
+    <h2>Demo Use Cases</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">📊</div>
+        <div style="font-weight:600;margin-bottom:0.3rem;font-size:0.9rem">PPT Copilot</div>
+        <div class="lbl">Voice-controlled slide navigation with semantic intent classification — ignores "and next we should..."</div>
+      </div>
+      <div class="card">
+        <div class="icon">🎫</div>
+        <div style="font-weight:600;margin-bottom:0.3rem;font-size:0.9rem">Customer Care</div>
+        <div class="lbl">CSR + customer duplex capture. RBAC gates ticket close + flight booking to CSR role only.</div>
+      </div>
+    </div>
+    <div class="slide-num">5 / 6</div>
+  </div>
+  <div class="slide" id="s5">
+    <h2>Thank You</h2>
+    <p style="text-align:center">PILOT — Always listening. Always aware. Always safe.</p>
+    <p style="font-size:0.8rem;margin-top:1rem;text-align:center">Grid Dynamics Capstone 2026</p>
+    <div class="slide-num">6 / 6</div>
+  </div>
+  <div class="prog" id="prog"></div>
+</div>
+<script>
+const slides = document.querySelectorAll(".slide");
+let cur = 0;
+function buildProg(){const p=document.getElementById("prog");p.innerHTML="";slides.forEach((_,i)=>{const d=document.createElement("div");d.className="dot"+(i===cur?" on":"");p.appendChild(d);})}
+function goTo(n){if(n<0||n>=slides.length)return;slides[cur].classList.remove("active");cur=n;slides[cur].classList.add("active");buildProg();}
+buildProg();
+window.addEventListener("message",e=>{const a=e.data?.action;if(a==="next")goTo(cur+1);else if(a==="prev")goTo(cur-1);else if(a==="first")goTo(0);else if(a==="last")goTo(slides.length-1);else if(a==="goto"&&e.data.index!==undefined)goTo(e.data.index);});
+document.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key===" ")goTo(cur+1);else if(e.key==="ArrowLeft")goTo(cur-1);});
+</script>
+</body>
+</html>

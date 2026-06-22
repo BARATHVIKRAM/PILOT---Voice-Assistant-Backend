@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="13.333333in" height="7.5in" class="slides-canvas" viewBox="0 0 960 540">
+  <defs>
+    <radialGradient id="rg_f5f5f5_G7fdfdfd_ffffff_245_304_339_339_a" cx="245" cy="486" r="339" gradientTransform="scale(1, 0.625)" spreadMethod="reflect" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5F5F5" />
+      <stop offset="0.45" stop-color="#FDFDFD" />
+      <stop offset="1" stop-color="#FFFFFF" />
+    </radialGradient>
+    <radialGradient id="rg_f5f5f5_G7fdfdfd_ffffff_713_304_339_339_a" cx="713" cy="486" r="339" gradientTransform="scale(1, 0.625)" spreadMethod="reflect" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5F5F5" />
+      <stop offset="0.45" stop-color="#FDFDFD" />
+      <stop offset="1" stop-color="#FFFFFF" />
+    </radialGradient>
+  </defs>
+  <g text-rendering="geometricPrecision" transform="scale(1, 1)">
+    <rect x="0" y="0" width="960" height="540" fill="#FFFFFF" />
+    <path fill="#2683C6" d="M0 504L959.75 504 959.75 540 0 540z" />
+    <path fill="#1CADE4" d="M0 498.77L959.75 498.77 959.75 503.81 0 503.81z" />
+    <path stroke-width="0.75" stroke="#7F7F7F" fill="none" d="M93.98 136.84L878.78 136.84" />
+    <path fill="#57938E" d="M10.29 5.49L947.66 5.49 947.66 151.13 10.29 151.13z" />
+    <g transform="matrix(1, 0, 0, 1, 29.785583, 24.985672)"></g>
+</svg>

@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --gold:      #7C5E00;
+  --gold-bg:   #F5A700;
+  --gold-light:#FFF3CD;
+  --gold-btn:  #6B5100;
+  --bg:        #F7F6F3;
+  --bg2:       #EFEDE8;
+  --white:     #FFFFFF;
+  --border:    #E5E2DA;
+  --text-1:    #1A1A1A;
+  --text-2:    #2C2C2C;
+  --text-3:    #2C2C2C;
+  --green:     #22C55E;
+  --blue:      #3B82F6;
+  --red:       #EF4444;
+  --sans:      'Inter', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: var(--sans); cursor: pointer; }
+input, select, textarea { font-family: var(--sans); }
+
+/* Custom global scrollbar support so scrollbars are always clearly visible when content is scrollable */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFBF00;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FFBF00;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Force scrollbar display on scrollable containers in macOS/iOS */
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(108, 99, 255, 0.15);
+}
+
+@keyframes fadeIn   { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@keyframes pulse    { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+@keyframes barBeat  { 0%,100%{height:4px} 50%{height:18px} }
+@keyframes spin     { to { transform: rotate(360deg); } }
+@keyframes waveRing { 0%{transform:scale(1);opacity:.6} 100%{transform:scale(1.6);opacity:0} }
+
+@keyframes barBeat {
+  0%,100% { height: 4px; }
+  50%      { height: var(--h, 18px); }
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}

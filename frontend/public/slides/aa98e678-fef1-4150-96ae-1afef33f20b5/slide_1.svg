@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="13.333333in" height="7.5in" class="slides-canvas" viewBox="0 0 960 540">
+  <g text-rendering="geometricPrecision" transform="scale(1, 1)">
+    <rect x="0" y="0" width="960" height="540" fill="#FFFFFF" />
+    <path fill="#2683C6" d="M0 504L960 504 960 540 0 540z" />
+    <path fill="#1CADE4" d="M0 498.77L960 498.77 960 504 0 504z" />
+    <path stroke-width="0.75" stroke="#7F7F7F" fill="none" d="M95.09 342L872.69 342" />
+    <g transform="matrix(1, 0, 0, 1, 93.598816, 39.941254)"></g>
+</svg>
