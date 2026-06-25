@@ -10,13 +10,9 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                checkout scm
-            }
-        }
+       
 
-        stage('Set Image Tag') {
+         stage('Set Image Tag') {
             steps {
                 script {
                     if (env.BRANCH_NAME == 'main') {
